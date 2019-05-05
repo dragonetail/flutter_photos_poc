@@ -1,8 +1,10 @@
 import 'dart:async';
-
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter/services.dart';
 import './device/device_asset_path.dart';
 import './device/device_asset.dart';
+import './device/device_grouped_assets.dart';
 
 class XinyanyunFlutter {
   static const MethodChannel _channel =
@@ -37,28 +39,46 @@ class XinyanyunFlutter {
     return assets;
   }
 
-  static Future<List<DeviceAsset>> getDeviceAssets(String assetPathId) async {
+  static Future<List<DeviceGroupedAssets>> getDeviceAssets(
+      String assetPathId) async {
+    //Intl.defaultLocale = 'zh_CN';
+    initializeDateFormatting();
+
     assert(assetPathId != null);
     final List<dynamic> results =
         await _channel.invokeMethod('getDeviceAssets', assetPathId);
 
+    String preCreation = "-";
+    var groupedAssets = List<DeviceGroupedAssets>();
     var assets = List<DeviceAsset>();
     for (var item in results) {
+      var creationDate =
+          DateTime.fromMillisecondsSinceEpoch(item['creationDate'] ?? 0);
       var asset = DeviceAsset(
         id: item['id'],
-        creationDate:
-            DateTime.fromMillisecondsSinceEpoch(item['creationDate'] ?? 0),
+        creationDate: creationDate,
         pixelWidth: item['pixelWidth'],
         pixelHeight: item['pixelHeight'],
       );
 
-      assets.add(asset);
+      var formatter = DateFormat.yMMMMEEEEd();
+      String creationDateStr = formatter.format(creationDate);
+      if (preCreation == creationDateStr) {
+        assets.add(asset);
+      } else {
+        preCreation = creationDateStr;
+        assets = List<DeviceAsset>();
+        assets.add(asset);
+        groupedAssets.add(
+            DeviceGroupedAssets(groupTitle: creationDateStr, assets: assets));
+      }
     }
-    return assets;
+    return groupedAssets;
   }
 
   static Future<ByteData> requestThumbnail(
-      String assetId, int width, int height, {int quality = 100}) async {
+      String assetId, int width, int height,
+      {int quality = 100}) async {
     assert(assetId != null);
     assert(width != null);
     assert(height != null);
@@ -100,7 +120,8 @@ class XinyanyunFlutter {
     }
   }
 
-  static Future<ByteData> requestOriginal(String assetId, {int quality = 100}) async {
+  static Future<ByteData> requestOriginal(String assetId,
+      {int quality = 100}) async {
     assert(assetId != null);
     assert(quality != null);
 

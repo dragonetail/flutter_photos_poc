@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
-
+import 'package:intl/intl.dart';
 import 'package:flutter/services.dart';
 import 'package:xinyanyun_flutter/xinyanyun_flutter.dart';
 import './asset_path_list_page.dart';
 import './asset_list_page.dart';
 
 void main() {
+  Intl.defaultLocale = 'zh_CN';
   runApp(MyApp());
 }
 
@@ -50,22 +51,22 @@ class _MyAppState extends State<MyApp> {
         await XinyanyunFlutter.deviceAssetPathes;
     print(deviceAssetPathes);
 
-    for (var assetPath in deviceAssetPathes) {
-      List<DeviceAsset> deviceAssets =
-          await XinyanyunFlutter.getDeviceAssets(assetPath.id);
-      print(deviceAssets);
+    // for (var assetPath in deviceAssetPathes) {
+    //   List<DeviceAsset> deviceAssets =
+    //       await XinyanyunFlutter.getDeviceAssets(assetPath.id);
+    //   print(deviceAssets);
 
-      if (deviceAssets.isNotEmpty) {
-        DeviceAsset asset = deviceAssets.first;
-        if (asset != null) {
-          Future<ByteData> assetData =
-              XinyanyunFlutter.requestThumbnail(asset.id, 100, 100);
-          assetData.whenComplete(() {
-            print("OK");
-          });
-        }
-      }
-    }
+    //   if (deviceAssets.isNotEmpty) {
+    //     DeviceAsset asset = deviceAssets.first;
+    //     if (asset != null) {
+    //       Future<ByteData> assetData =
+    //           XinyanyunFlutter.requestThumbnail(asset.id, 100, 100);
+    //       assetData.whenComplete(() {
+    //         print("OK");
+    //       });
+    //     }
+    //   }
+    // }
   }
 
   @override
